@@ -13,9 +13,11 @@ public class AuthenticationMedunna {
     public static String generateToken() {
 
         Map<String,Object> bodyMap = new HashMap<>();
-        bodyMap.put("password","Batch.103");
+        bodyMap.put("password","qa.ahmet");
         bodyMap.put("rememberMe",true);
-        bodyMap.put("username","batch_yuzuc");
+        bodyMap.put("username","qa_ahmet");
+
+        //Response dan gelen token'i alabilmemiz için Content typ belirttik json olarak
 
        Response response= given().contentType(ContentType.JSON).body(bodyMap).post("https://medunna.com/api/authenticate");
 

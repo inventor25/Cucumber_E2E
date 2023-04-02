@@ -5,17 +5,17 @@ import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import utilities.Driver;
 
-public class MedunnaPage {
+public class MedunnaLoginPage {
 
 
-    public MedunnaPage() {
+    public MedunnaLoginPage() {
         PageFactory.initElements(Driver.getDriver(),this);
     }
 
-    @FindBy(xpath ="//li[@id='account-menu']" )
+    @FindBy(id ="account-menu" )
     public WebElement signSymbol;
 
-    @FindBy(xpath = "(//*[@data-icon='sign-in-alt'])[1]")
+    @FindBy(id = "login-item")
     public WebElement signInButton;
 
     @FindBy(id = "username")
@@ -24,6 +24,11 @@ public class MedunnaPage {
     @FindBy(id = "password")
     public WebElement password;
 
+    @FindBy(id = "rememberMe")
+    public WebElement rememberMeCheckbox;
+
     @FindBy(xpath = "(//span[.='Sign in'])[3]")
     public WebElement signInButton2;
+
+
 }
