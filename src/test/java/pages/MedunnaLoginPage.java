@@ -30,5 +30,13 @@ public class MedunnaLoginPage {
     @FindBy(xpath = "(//span[.='Sign in'])[3]")
     public WebElement signInButton2;
 
+    @FindBy(id = "username")
+    public WebElement usernameInput;
+
+    @FindBy(id = "password")
+    public WebElement passwordInput;
+
+    @FindBy(xpath = " //button[@type='submit']")
+    public WebElement signInSubmitButton;
 
 }

@@ -6,6 +6,10 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.*;
 
+
+import java.awt.*;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -16,29 +20,27 @@ import java.util.List;
 import java.util.Random;
 import java.util.function.Function;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+
 public class ReusableMethods {
-    /*HOW DO YOU GET SCREENSHOT?
-     * I use getScreenShotAs method to take a screenshot in selenium in my framework
-     * I actually store the screenshot with unique name in my framework*/
+    static JavascriptExecutor jse;
+
     public static String getScreenshot(String name) throws IOException {
-//        THIS METHOD TAKES SCREENSHOT AND STORE IN /test-output FOLDER
-//        NAME OF THE SCREEN IS BASED ON THE CURRENT TIME
-//        SO THAN WE CAN HAVE UNIQUE NAME
         // naming the screenshot with the current date to avoid duplication
         String date = new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
-//        public static final String path = date.toString();
-        // TakesScreenshot is an interface of selenium that takes the screenshot. SAME IS IN THE HOOKS
+        // TakesScreenshot is an interface of selenium that takes the screenshot
         TakesScreenshot ts = (TakesScreenshot) Driver.getDriver();
         File source = ts.getScreenshotAs(OutputType.FILE);
         // full path to the screenshot location
-        String target = System.getProperty("user.dir") + "/test-output/Screenshots/" + name + date + ".png";
+        String target = System.getProperty("user.dir") + "/test-output/Screenshots/" + date + ".png";
         File finalDestination = new File(target);
         // save the screenshot to the path given
         FileUtils.copyFile(source, finalDestination);
         return target;
     }
+
     //========Switching Window=====//
     public static void switchToWindow(String targetTitle) {
         String origin = Driver.getDriver().getWindowHandle();
@@ -50,11 +52,13 @@ public class ReusableMethods {
         }
         Driver.getDriver().switchTo().window(origin);
     }
+
     //========Hover Over=====//
     public static void hover(WebElement element) {
         Actions actions = new Actions(Driver.getDriver());
         actions.moveToElement(element).perform();
     }
+
     //==========Return a list of string given a list of Web Element====////
     public static List<String> getElementsText(List<WebElement> list) {
         List<String> elemTexts = new ArrayList<>();
@@ -65,6 +69,7 @@ public class ReusableMethods {
         }
         return elemTexts;
     }
+
     //========Returns the Text of the element given an element locator==//
     public static List<String> getElementsText(By locator) {
         List<WebElement> elems = Driver.getDriver().findElements(locator);
@@ -76,8 +81,9 @@ public class ReusableMethods {
         }
         return elemTexts;
     }
+
     //   HARD WAIT WITH THREAD.SLEEP
-//   waitFor(5);  => waits for 5 second
+//   waitFor(5);  => waits for 5 second => Thread.sleep(5000)
     public static void waitFor(int sec) {
         try {
             Thread.sleep(sec * 1000);
@@ -85,23 +91,29 @@ public class ReusableMethods {
             e.printStackTrace();
         }
     }
+
     //===============Explicit Wait==============//
     public static WebElement waitForVisibility(WebElement element, int timeout) {
         WebDriverWait wait = new WebDriverWait(Driver.getDriver(), Duration.ofSeconds(timeout));
         return wait.until(ExpectedConditions.visibilityOf(element));
     }
+
     public static WebElement waitForVisibility(By locator, int timeout) {
         WebDriverWait wait = new WebDriverWait(Driver.getDriver(), Duration.ofSeconds(timeout));
         return wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
     }
+
     public static WebElement waitForClickablility(WebElement element, int timeout) {
         WebDriverWait wait = new WebDriverWait(Driver.getDriver(), Duration.ofSeconds(timeout));
         return wait.until(ExpectedConditions.elementToBeClickable(element));
     }
+
     public static WebElement waitForClickablility(By locator, int timeout) {
         WebDriverWait wait = new WebDriverWait(Driver.getDriver(), Duration.ofSeconds(timeout));
         return wait.until(ExpectedConditions.elementToBeClickable(locator));
     }
+
+
     public static void clickWithTimeOut(WebElement element, int timeout) {
         for (int i = 0; i < timeout; i++) {
             try {
@@ -112,6 +124,7 @@ public class ReusableMethods {
             }
         }
     }
+
     public static void waitForPageToLoad(long timeout) {
         ExpectedCondition<Boolean> expectation = new ExpectedCondition<Boolean>() {
             public Boolean apply(WebDriver driver) {
@@ -127,26 +140,33 @@ public class ReusableMethods {
                     "Timeout waiting for Page Load Request to complete after " + timeout + " seconds");
         }
     }
+
     //======Fluent Wait====//
     public static WebElement fluentWait(final WebElement webElement, int timeout) {
         //FluentWait<WebDriver> wait = new FluentWait<WebDriver>(Driver.getDriver()).withTimeout(timeinsec, TimeUnit.SECONDS).pollingEvery(timeinsec, TimeUnit.SECONDS);
         FluentWait<WebDriver> wait = new FluentWait<WebDriver>(Driver.getDriver())
                 .withTimeout(Duration.ofSeconds(3))//Wait 3 second each time
-                .pollingEvery(Duration.ofSeconds(1));//Check for the element every 1 second
+                .pollingEvery(Duration.ofSeconds(1))////Check for the element every 1 second
+                .ignoring(NoSuchMethodException.class);
+
         WebElement element = wait.until(new Function<WebDriver, WebElement>() {
             public WebElement apply(WebDriver driver) {
                 return webElement;
             }
         });
+
         return element;
     }
+
     /**
      * Performs double click action on an element
+     *
      * @param element
      */
     public static void doubleClick(WebElement element) {
         new Actions(Driver.getDriver()).doubleClick(element).build().perform();
     }
+
     /**
      * @param element
      * @param check
@@ -162,8 +182,10 @@ public class ReusableMethods {
             }
         }
     }
+
     /**
      * Selects a random value from a dropdown list and returns the selected Web Element
+     *
      * @param select
      * @return
      */
@@ -174,6 +196,55 @@ public class ReusableMethods {
         select.selectByIndex(optionIndex);
         return select.getFirstSelectedOption();
     }
+
+    /**
+     * Verifies whether the element matching the provided locator is displayed on page
+     * fails if the element matching the provided locator is not found or not displayed
+     *
+     * @param by
+     */
+    public static void verifyElementDisplayed(By by) {
+        try {
+            assertTrue("Element not visible: " + by, Driver.getDriver().findElement(by).isDisplayed());
+        } catch (NoSuchElementException e) {
+            Assert.fail("Element not found: " + by);
+        }
+    }
+
+    /**
+     * Verifies whether the element matching the provided locator is NOT displayed on page
+     * fails if the element matching the provided locator is not found or not displayed
+     *
+     * @param by
+     */
+    public static void verifyElementNotDisplayed(By by) {
+        try {
+            assertFalse("Element should not be visible: " + by, Driver.getDriver().findElement(by).isDisplayed());
+        } catch (NoSuchElementException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Verifies whether the element matching the provided WebElement is NOT displayed on page
+     * fails if the element matching the WebElement is not found or not displayed
+     *
+     * @paramWebElement
+     */
+    public static void verifyElementNotDisplayed(WebElement element) {
+        try {
+            assertFalse("Element should not be visible: " + element, element.isDisplayed());
+        } catch (NoSuchElementException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Verifies whether the element is displayed on page
+     * fails if the element is not found or not displayed
+     *
+     * @param element
+     */
     public static void verifyElementDisplayed(WebElement element) {
         try {
             assertTrue("Element not visible: " + element, element.isDisplayed());
@@ -181,4 +252,211 @@ public class ReusableMethods {
             Assert.fail("Element not found: " + element);
         }
     }
+
+    public static void clickByJS(WebElement element) {
+        JavascriptExecutor js = (JavascriptExecutor) Driver.getDriver();
+        js.executeScript("arguments[0].click();", element);
+    }
+
+    // Url'ye gitmek için Reusable Method
+    public static void goToUrl(String urlPath) {
+        try {
+            Driver.getDriver().get(ConfigReader.getProperty(urlPath));
+        } catch (WebDriverException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // login yapabilmek için Reusable Method
+    public static void login(WebElement signIn, WebElement username, String usernameYaz, String passwordYaz) {
+
+        try {
+
+            signIn.click();
+            username.sendKeys(ConfigReader.
+                            getProperty(usernameYaz), Keys.TAB, ConfigReader.getProperty(passwordYaz),
+                    Keys.TAB, Keys.TAB, Keys.TAB, Keys.ENTER);
+        } catch (NoSuchElementException e) {
+            Assert.fail("Hatalı kullanıcı bilgileri girdiniz");
+        }
+
+
+    }
+
+    // logout yapabilmek için Reusable Method
+    public static void logout(WebElement signOut, WebElement logOut) {
+        try {
+
+            signOut.click();
+            logOut.click();
+
+        } catch (NoSuchElementException e) {
+            Assert.fail("Web Element bulunamadı");
+        }
+    }
+
+    // CLICK WITH JS
+    public static void clickWithJS(WebElement element) {
+        ((JavascriptExecutor) Driver.getDriver()).executeScript("arguments[0].scrollIntoView(true);", element);
+        ((JavascriptExecutor) Driver.getDriver()).executeScript("arguments[0].click();", element);
+    }
+
+    // Pixel ile sayfa da istediğimiz noktaya erişme methodu
+    public static void scrollByJS(int scrollAmountByPixel) {
+        jse = ((JavascriptExecutor) Driver.getDriver());
+        jse.executeScript("window.scrollBy(0," + scrollAmountByPixel + ")");
+        waitFor(2);
+    }
+
+    // SCROLL TO ELEMENT WITH JS
+    public static void scrollToElement(WebElement element) {
+        ((JavascriptExecutor) Driver.getDriver()).executeScript("arguments[0].scrollIntoView(true);", element);
+    }
+
+    //Dropdown element text ile seçme methodu
+    public static void selectElementVisibleText(By locator, String text) {
+        Select select = new Select(Driver.getDriver().findElement(locator));
+        select.selectByVisibleText(text);
+    }
+    public static void selectElementVisibleText(WebElement dropdownElement, String text) {
+        Select select = new Select(dropdownElement);
+        select.selectByVisibleText(text);
+    }
+
+    //Dropdown element index ile seçme methodu
+    public static void selectElementByIndex(By locator, int index) {
+        Select select = new Select(Driver.getDriver().findElement(locator));
+        select.selectByIndex(index);
+    }
+
+    //Sayfanın boş bir yerine tıklayarak Cookies kapatma methodu
+    public void clickOutside() {
+        Actions action = new Actions(Driver.getDriver());
+        action.moveByOffset(0, 0).click().build().perform();
+    }
+
+    // iframeye geçiş methodu
+    public static void switchToIframe(WebElement iframe) {
+        try {
+            Driver.getDriver().switchTo().frame(iframe);
+        } catch (NoSuchElementException e) {
+
+            Assert.fail("Web Element bulunamadı");
+
+        }
+
+
+    }
+
+    // iframeye geçiş methodu index ile
+    public static void switchToIframeIndex(int index) {
+        try {
+            Driver.getDriver().switchTo().frame(index);
+        } catch (NoSuchElementException e) {
+
+            Assert.fail("Web Element bulunamadı");
+
+        }
+    }
+
+    // Parent frame geçiş methodu
+
+    public static void parentToFrameGec() {
+
+        Driver.getDriver().switchTo().parentFrame();
+    }
+
+    //   SCREENSHOTS
+    public static void takeScreenShotOfPage() throws IOException {
+//        1. Take screenshot
+        File image = ((TakesScreenshot)Driver.getDriver()).getScreenshotAs(OutputType.FILE);
+
+//       2. Save screenshot
+//        getting the current time as string to use in teh screenshot name, previous screenshots will be kept
+        String currentTime = new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
+
+//        Path of screenshot save folder               folder / folder    /file name
+        String path = System.getProperty("user.dir")+"/test-output/Screenshots/"+currentTime+"image.png";
+        FileUtils.copyFile(image,new File(path));
+    }
+
+    // login yapabilmek için Reusable Method
+    public static void dataProviderlogin(WebElement signIn, WebElement username, String usernameYaz, String passwordYaz) {
+
+        try {
+
+            signIn.click();
+            username.sendKeys(usernameYaz, Keys.TAB,passwordYaz,
+                    Keys.TAB, Keys.TAB, Keys.TAB, Keys.ENTER);
+        } catch (NoSuchElementException e) {
+            Assert.fail("Hatalı kullanıcı bilgileri girdiniz");
+        }
+
+
+    }
+    /**
+     * @param filePath ABSOLUTE DOSYA YOLU
+     *  ORNEK : ReusableMethods.uploadFilePath("/Users/techproed/Desktop/logo.jpeg")
+     */
+    public static void uploadFilePath(String filePath){
+        try{
+            ReusableMethods.waitFor(3);
+//            Dosyayi bulmak icin kullanilir
+            StringSelection stringSelection = new StringSelection(filePath);
+            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(stringSelection,null);
+//            ROBOT CLASS MASAUSTU UYGULAMARI ILE ILETISIME GECMEK ICIN KULLANILIT
+            Robot robot = new Robot();
+//          CONTROL TUSUNA BAS
+            robot.keyPress(KeyEvent.VK_CONTROL);
+            ReusableMethods.waitFor(3);
+//            V TUSUNA BAS
+            robot.keyPress(KeyEvent.VK_V);
+            ReusableMethods.waitFor(3);
+            //releasing ctrl+v
+            robot.keyRelease(KeyEvent.VK_CONTROL);
+            ReusableMethods.waitFor(3);
+            robot.keyRelease(KeyEvent.VK_V);
+            ReusableMethods.waitFor(3);
+            System.out.println("YAPISTIRMA ISLEMI : PASSED");
+            //pressing enter
+            ReusableMethods.waitFor(3);
+            robot.keyPress(KeyEvent.VK_ENTER);
+            ReusableMethods.waitFor(3);
+            //releasing enter
+            robot.keyRelease(KeyEvent.VK_ENTER);
+            ReusableMethods.waitFor(3);
+            System.out.println("DOSYA YUKLENDI.");
+        }catch (Exception e){
+        }
+    }
+
+
+    //      gitmis oldugum metni elemente yazdirir
+//       bu method sendKeys metotuna bir alternatifdir.
+//       sendKeys oncelikli tercihimizdir
+    public void typeWithJS(WebElement element, String metin){
+        JavascriptExecutor js = (JavascriptExecutor)Driver.getDriver();
+        js.executeScript("arguments[0].setAttribute('value','"+metin+"')",element);
+
+    }
+
+
+    //    input elementindeki degerleri(value) al
+//   Belirli bir WebElement'in id değerini String olarak alır ve value attribute değerini String olarak döndürür
+//    return
+//    document HTML'E GIT
+//    .getElementById('" + idOfElement + "') ID'si VERILEN ELEMENTI BUL
+//    .value")
+//    .toString();
+    public void getValueByJS(String idOfElement) {
+        JavascriptExecutor js = (JavascriptExecutor)Driver.getDriver();
+        String text=js.executeScript("return document.getElementById('"+idOfElement+"').value").toString();
+        System.out.println("Kutudaki değer : "+text);
+//        NOT: document.querySelector("p").value; -> TAG KULLANILABILIR
+//             document.querySelector(".example").value; -> CSS DEGERI KULLANILABILIR
+//             document.querySelector("#example").value; -> CSS DEGERI KULLANILABILIR
+    }
+
+
+
 }

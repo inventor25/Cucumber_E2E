@@ -32,7 +32,7 @@ public class RoomCreationStepDefs {
         spec.pathParams("first", "api", "second", "rooms");
 
         //Set the expected data
-        expectedData = new Room("Api'dan yeni oda", 25, roomNumber, "TWIN", true);
+        expectedData = new Room("Api'dan yeni Dadas oda", 25, roomNumber, "TWIN", true);
 
         //Send the request and get the response
         response = given(spec).body(expectedData).post("{first}/{second}");
@@ -58,7 +58,7 @@ public class RoomCreationStepDefs {
                 body("roomType", equalTo("TWIN")).
                 body("status", equalTo(true)).
                 body("price", equalTo(25)).
-                body("description", equalTo("Api'dan yeni oda"));
+                body("description", equalTo("Api'dan yeni Dadas oda"));
 
         //2. Validation
         //Response muzu Json path objesi içerisine koyduk

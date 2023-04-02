@@ -1,3 +1,4 @@
+@e2e
 Feature: Medunna Room Creation
 
   Background: Sign In Medunna
@@ -23,4 +24,4 @@ Feature: Medunna Room Creation
     And close the application
     Examples:
       | room_number | price | description                      |
-      | 72244940    | 123   | Created By Selenium For Api Test |
+      | 72244940    | 25   | Created By Erzurum For Api Test |
